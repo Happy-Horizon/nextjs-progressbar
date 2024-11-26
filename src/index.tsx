@@ -21,6 +21,10 @@ export interface NextNProgressProps {
    */
   startPosition?: number;
   /**
+   * The start delay in milliseconds.
+   * @default 250
+   */
+  startDelayMs?: number;  /**
    * The stop delay in milliseconds.
    * @default 200
    */
@@ -57,6 +61,7 @@ export interface NextNProgressProps {
 const NextNProgress = ({
   color = '#29D',
   startPosition = 0.3,
+  startDelayMs = 250,
   stopDelayMs = 200,
   height = 3,
   showOnShallow = true,
@@ -69,6 +74,7 @@ const NextNProgress = ({
   ),
 }: NextNProgressProps) => {
   let timer: NodeJS.Timeout | null = null;
+  let timeout: NodeJS.Timeout | null = null;
 
   React.useEffect(() => {
     if (options) {
@@ -92,10 +98,10 @@ const NextNProgress = ({
       shallow: boolean;
     },
   ) => {
-    if (!shallow || showOnShallow) {
+    timeout = setTimeout(() => {
       NProgress.set(startPosition);
       NProgress.start();
-    }
+    }, startDelayMs);
   };
 
   const routeChangeEnd = (
@@ -106,6 +112,10 @@ const NextNProgress = ({
       shallow: boolean;
     },
   ) => {
+    if (timeout) clearTimeout(timeout);
+    if (!NProgress.isStarted()) {
+      return;
+    }
     if (!shallow || showOnShallow) {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
@@ -204,6 +214,7 @@ const NextNProgress = ({
 NextNProgress.propTypes = {
   color: PropTypes.string,
   startPosition: PropTypes.number,
+  startDelayMs: PropTypes.number,
   stopDelayMs: PropTypes.number,
   height: PropTypes.number,
   showOnShallow: PropTypes.bool,
